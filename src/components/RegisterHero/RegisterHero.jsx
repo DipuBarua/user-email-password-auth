@@ -1,11 +1,23 @@
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import auth from "../../firebase/firebase.config";
 
 const RegisterHero = () => {
     const handleRegisteHero = e => {
         e.preventDefault();
-        console.log('registered');
+        // console.log('registered');
         const email = e.target.email.value;
         const password = e.target.password.value;
-        console.log(email, password);
+        // console.log(email, password);
+
+        // create user 
+        createUserWithEmailAndPassword(auth, email, password)
+            .then(result => {
+                console.log(result.user);
+            })
+            .catch(error => {
+                console.error(error);
+            })
+
     }
     return (
         <div className="hero min-h-screen bg-base-200">
