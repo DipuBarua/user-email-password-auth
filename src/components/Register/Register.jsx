@@ -1,7 +1,8 @@
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, sendEmailVerification, updateProfile } from "firebase/auth";
 import auth from "../../firebase/firebase.config";
 import { useState } from "react";
 import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
+import { Link } from "react-router-dom";
 
 
 const Register = () => {
@@ -14,10 +15,11 @@ const Register = () => {
         e.preventDefault();
         console.log('register form submited');
 
+        const name = e.target.name.value;
         const email = e.target.email.value;
         const password = e.target.password.value;
         const accepted = e.target.terms.checked;
-        console.log(email, password, accepted);
+        console.log(name, email, password, accepted);
 
         // reset error msg 
         setRegisterError('');
@@ -32,7 +34,7 @@ const Register = () => {
             setRegisterError("Password should have at least 1 Upper Case character.");
             return;
         }
-        else if(!accepted){
+        else if (!accepted) {
             setRegisterError("Please accept the terms and conditions!");
             return;
         }
@@ -42,6 +44,22 @@ const Register = () => {
             .then(result => {
                 console.log(result.user);
                 setSuccess('Registration Successful.');
+
+                // update user profile name 
+                updateProfile(result.user, {
+                    displayName: name,
+                    photoURL: "https://example.com/jane-q-user/profile.jpg"
+                }).then(()=>console.log('profile updated'))
+                    .catch(error => console.log(error));
+                    
+                // send email verification 
+                sendEmailVerification(result.user)
+                    .then(() => {
+                        alert('Please check your email and verify account.');
+                    })
+                    .catch(() => {
+                        console.log('verification failed');
+                    })
             })
             .catch(error => {
                 console.error(error);
@@ -55,6 +73,8 @@ const Register = () => {
             <div className=" border border-black bg-blue-300 w-1/2 mx-auto text-center mt-10">
                 <h2 className=" text-3xl bg-blue-700 mb-2 p-5 text-white">Please Register</h2>
                 <form onSubmit={handleRegisterForm}>
+                    <input className=" mb-4 w-1/2 p-2" type="text" name="name" id="" placeholder="Your Name" required />
+                    <br />
                     <input className=" mb-4 w-1/2 p-2" type="email" name="email" id="" placeholder="Email" required />
                     <br />
                     <div className="relative">
@@ -78,6 +98,7 @@ const Register = () => {
                     <br />
                     <input className=" btn btn-secondary mb-4 w-1/2" type="submit" value="Register" />
                 </form>
+                <p>Already have an account? Please <Link to={'/login'}>Login</Link></p>
                 {
                     registerError && <p className=" text-red-700">{registerError}</p>
                 }
